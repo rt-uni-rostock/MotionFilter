@@ -1,0 +1,6 @@
+[submodule "submodules/AVE"]
+	path = submodules/AVE
+	url = https://github.com/rt-uni-rostock/AVE.git
+[submodule "submodules/SRSSUKF"]
+	path = submodules/SRSSUKF
+	url = https://github.com/RobertDamerius/SRSSUKF.git
