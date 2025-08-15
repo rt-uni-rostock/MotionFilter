@@ -11,9 +11,9 @@
 % ( y_dot ) = Rb2n * ( v )
 % (psi_dot)          ( r )
 % 
-% ( u_dot )                                                          (( X )            ( Xe ))
-% ( v_dot ) = F * [u; v; r; v*r; u*r; u*v; r^2; u^3; v^3; r^3] + B * (( Y ) + Rb2n^T * ( Ye )) + w_uvr
-% ( r_dot )                                                          (( N )            ( Ne ))
+% ( u_dot )                                                                    (( X )            ( Xe ))
+% ( v_dot ) = F * [u; v; r; v*r; u*r; u*v; u^2; v^2; r^2; u^3; v^3; r^3] + B * (( Y ) + Rb2n^T * ( Ye )) + w_uvr
+% ( r_dot )                                                                    (( N )            ( Ne ))
 % 
 % ( Xe_dot)
 % ( Ye_dot) = w_XYN
@@ -92,12 +92,15 @@ classdef MotionFilter3DoF < handle
             u = x(4);
             v = x(5);
             r = x(6);
+            uu = u*u;
+            vv = v*v;
+            rr = r*r;
             extXYN_body = R' * x(7:9);
 
             % ordinary differential equation
             xdot = [
                 R * [u; v; r];
-                model.matF * [u; v; r; v*r; u*r; u*v; r*r; u*u*u; v*v*v; r*r*r] + model.matB * (XYN + extXYN_body);
+                model.matF * [u; v; r; v*r; u*r; u*v; uu; vv; rr; u*uu; v*vv; r*rr] + model.matB * (XYN + extXYN_body);
                 zeros(3,1)
             ];
         end
@@ -105,11 +108,11 @@ classdef MotionFilter3DoF < handle
             structInput = struct( ...
                 'reset',                 false, ...            % True if filter is to be reset, false otherwise.
                 'model', struct( ...                           % ### MODEL PARAMETERS
-                    'matF',              zeros(3,10), ...      % F matrix for model uvr_dot = F * [u; v; r; v*r; u*r; u*v; r^2; u^3; v^3; r^3] + B * tau.
-                    'matB',              zeros(3) ...          % B matrix for model uvr_dot = F * [u; v; r; v*r; u*r; u*v; r^2; u^3; v^3; r^3] + B * tau.
+                    'matF',              zeros(3,12), ...      % F matrix for model uvr_dot = F * [u; v; r; v*r; u*r; u*v; u^2; v^2; r^2; u^3; v^3; r^3] + B * tau.
+                    'matB',              zeros(3) ...          % B matrix for model uvr_dot = F * [u; v; r; v*r; u*r; u*v; u^2; v^2; r^2; u^3; v^3; r^3] + B * tau.
                 ), ...
                 'stddevModel', struct( ...                     % ### MODEL STANDARD DEVIATION
-                    'velocityUVR', zeros(3,1), ...             % Uncertainty for velocity model uvr_dot = F * [u; v; r; v*r; u*r; u*v; r^2; u^3; v^3; r^3] + B * tau.
+                    'velocityUVR', zeros(3,1), ...             % Uncertainty for velocity model uvr_dot = F * [u; v; r; v*r; u*r; u*v; u^2; v^2; r^2; u^3; v^3; r^3] + B * tau.
                     'externalXYN', zeros(3,1) ...              % Uncertainty for external force model XeYeNe_dot = 0.
                 ), ...
                 'input', struct( ...                           % ### MODEL INPUT VALUE
